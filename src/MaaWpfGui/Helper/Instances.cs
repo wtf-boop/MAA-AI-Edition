@@ -70,6 +70,8 @@ public static class Instances
 
     public static CopilotViewModel CopilotViewModel { get; private set; }
 
+    public static AiAssistantViewModel AiAssistantViewModel { get; private set; }
+
     public static VersionUpdateDialogViewModel VersionUpdateDialogViewModel { get; private set; }
 
     public static AnnouncementDialogViewModel AnnouncementDialogViewModel { get; private set; }
@@ -117,6 +119,7 @@ public static class Instances
 
         SettingsViewModel = container.Get<SettingsViewModel>();
         CopilotViewModel = container.Get<CopilotViewModel>();
+        AiAssistantViewModel = container.Get<AiAssistantViewModel>();
 
         RemoteControlService = container.Get<RemoteControlService>();
 
