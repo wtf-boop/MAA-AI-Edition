@@ -1,0 +1,305 @@
+<UserControl
+    x:Class="MaaWpfGui.Views.UI.AiAssistantView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    mc:Ignorable="d">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,12">
+            <TextBlock DockPanel.Dock="Left" FontSize="22" FontWeight="SemiBold" Text="MAA AI 中心" />
+            <TextBlock Margin="16,5,0,0" Opacity="0.72" Text="保留原版 MAA；AI 功能可选启用" />
+        </DockPanel>
+
+        <TabControl Grid.Row="1">
+            <TabItem Header="AI 对话">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBox Padding="12" AcceptsReturn="True" IsReadOnly="True" Text="{Binding Transcript}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+                        <Grid Grid.Row="1" Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox MinHeight="42" Margin="0,0,8,0" Padding="10" hc:InfoElement.Placeholder="询问干员、关卡、攻略或配队" Text="{Binding Question, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Grid.Column="1" MinWidth="88" Command="{s:Action Send}" Content="发送" IsEnabled="{Binding CanSend}" />
+                        </Grid>
+                    </Grid>
+                    <Border Grid.Column="2" Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="模型与知识库" />
+                            <TextBlock Margin="0,12,0,4" Text="API 地址" />
+                            <TextBox Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Margin="0,10,0,4" Text="模型名称" />
+                            <TextBox Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Margin="0,10,0,4" Text="API Key（本地模型可留空）" />
+                            <PasswordBox x:Name="ApiKeyBox" PasswordChanged="ApiKeyBox_OnPasswordChanged" />
+                            <Button Margin="0,12,0,0" Command="{s:Action SaveSettings}" Content="保存设置" />
+                            <Button Margin="0,8,0,0" Command="{s:Action UpdateKnowledge}" Content="更新本地知识库" />
+                            <Button Margin="0,8,0,0" Command="{s:Action OpenKnowledgeFolder}" Content="打开知识文件夹" />
+                            <Button Margin="0,8,0,0" Command="{s:Action ClearChat}" Content="清空对话" />
+                            <Separator Margin="0,14" />
+                            <TextBlock FontWeight="SemiBold" Text="状态" />
+                            <TextBlock Margin="0,6,0,0" Text="{Binding Status}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="B站攻略库">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Margin="0,0,8,0" Padding="8" hc:InfoElement.Placeholder="搜索关卡、UP主、版本、类型或干员" Text="{Binding StrategyQuery, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="1" Margin="0,0,8,0" Command="{s:Action RefreshStrategies}" Content="搜索/刷新" />
+                        <Button Grid.Column="2" Margin="0,0,8,0" Command="{s:Action CreateStrategyExample}" Content="创建导入模板" />
+                        <Button Grid.Column="3" Command="{s:Action OpenStrategyFolder}" Content="打开攻略目录" />
+                    </Grid>
+                    <Border Grid.Row="1" Margin="0,10,0,0" Padding="12" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" Text="从用户提供的元数据与字幕/人工步骤导入" />
+                            <TextBlock Margin="0,5,0,8" Opacity="0.72" Text="不下载、不重新分发完整视频；解析结果会保留BV号、UP主与原视频入口。自动提取的步骤必须先预览和干运行。" TextWrapping="Wrap" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Margin="0,5,8,0" Text="元数据JSON" />
+                                <TextBox Grid.Column="1" Text="{Binding BilibiliMetadataPath, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Grid.Column="3" Margin="0,5,8,0" Text="字幕/步骤TXT" />
+                                <TextBox Grid.Column="4" Text="{Binding BilibiliTranscriptPath, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="150" /><ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="150" /><ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Margin="0,5,8,0" Text="关卡覆盖" />
+                                <TextBox Grid.Column="1" Text="{Binding BilibiliStageOverride, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Grid.Column="3" Margin="0,5,8,0" Text="版本覆盖" />
+                                <TextBox Grid.Column="4" Text="{Binding BilibiliVersionOverride, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button Grid.Column="6" Margin="0,0,8,0" Command="{s:Action CreateBilibiliImportExamples}" Content="创建导入样例" />
+                                <Button Grid.Column="7" Command="{s:Action ImportBilibiliStrategy}" Content="解析并导入" />
+                            </Grid>
+                            <TextBlock Margin="0,8,0,0" Text="{Binding BilibiliImportStatus}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Grid Grid.Row="2" Margin="0,12,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="3*" />
+                        </Grid.ColumnDefinitions>
+                        <ListBox ItemsSource="{Binding Strategies}" SelectedItem="{Binding SelectedStrategy}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="4">
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" TextWrapping="Wrap" />
+                                        <TextBlock Margin="0,3,0,0" Opacity="0.72" Text="{Binding Summary}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Border Grid.Column="2" Padding="14" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel DataContext="{Binding SelectedStrategy}">
+                                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding Title, TargetNullValue=请选择一条攻略}" TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,8,0,0" Text="{Binding Summary}" TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="干员" />
+                                    <ItemsControl ItemsSource="{Binding Operators}">
+                                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" /></DataTemplate></ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Margin="0,12,0,4" FontWeight="SemiBold" Text="结构化步骤" />
+                                    <ItemsControl ItemsSource="{Binding Steps}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Margin="0,2" TextWrapping="Wrap">
+                                                    <Run Text="{Binding Order}" /><Run Text=". " /><Run Text="{Binding Trigger}" /><Run Text=" → " /><Run Text="{Binding Action}" /><Run Text=" " /><Run Text="{Binding Operator}" /><Run Text=" " /><Run Text="{Binding Tile}" /><Run Text=" " /><Run Text="{Binding Direction}" /><Run Text=" " /><Run Text="{Binding Notes}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    <DockPanel Grid.Row="3">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button MinWidth="120" Margin="0,0,8,0" Command="{s:Action GenerateBattlePlan}" Content="生成AI作战计划" />
+                            <Button MinWidth="110" Command="{s:Action OpenStrategySource}" Content="打开原视频" />
+                        </StackPanel>
+                        <TextBlock Margin="0,6,12,0" Text="{Binding StrategyStatus}" TextWrapping="Wrap" />
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="AI控制中心">
+                <ScrollViewer Margin="12" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock FontSize="18" FontWeight="SemiBold" Text="AI Brain 与作战计划" />
+                                <TextBlock Margin="0,8,0,0" Text="从当前选中的B站结构化攻略生成统一计划，结合账号画像计算适配度，并输出下一步、风险和解释。当前不会声称已经接管 MaaCore。" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="计划状态" />
+                                <TextBlock Margin="0,5,0,0" Text="{Binding PlanStatus}" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,12,0,0" FontWeight="SemiBold" Text="Brain 决策" />
+                                <TextBlock Margin="0,5,0,0" Text="{Binding BrainStatus}" TextWrapping="Wrap" />
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Margin="0,5,8,0" Text="当前游戏版本" />
+                                    <TextBox Grid.Column="1" hc:InfoElement.Placeholder="例如 2026.07" Text="{Binding CurrentGameVersion, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Button Grid.Column="3" Command="{s:Action CheckSelectedStrategyVersion}" Content="检查攻略版本" />
+                                </Grid>
+                                <TextBlock Margin="0,8,0,0" Text="{Binding VersionGuardStatus}" TextWrapping="Wrap" />
+                                <Button Margin="0,12,0,0" HorizontalAlignment="Left" Command="{s:Action GenerateBattlePlan}" Content="根据所选攻略生成计划" />
+                                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action ExportMaaCopilot}" Content="导出原生 MAA Copilot 作业" />
+                                    <Button Margin="0,0,8,0" Command="{s:Action RecordSuccessFeedback}" Content="记录成功" />
+                                    <Button Command="{s:Action RecordFailureFeedback}" Content="记录失败" />
+                                </StackPanel>
+                                <TextBlock Margin="0,8,0,0" Text="{Binding CopilotExportStatus}" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,6,0,0" Text="{Binding FeedbackStatus}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,14,0,0" Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock FontSize="18" FontWeight="SemiBold" Text="安全执行状态机" />
+                                <TextBlock Margin="0,8,0,0" Text="先进行干运行，逐步检查动作、重试和回退逻辑。当前 MaaCore 适配器明确标记为不可用，因此不会点击游戏。" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,10,0,0" Text="{Binding ExecutionStatus}" TextWrapping="Wrap" />
+                                <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action ValidateAndCreateDryRun}" Content="创建干运行会话" />
+                                    <Button Margin="0,0,8,0" Command="{s:Action RunNextDryStep}" Content="检查并验证下一步" />
+                                    <Button Margin="0,0,8,0" Command="{s:Action RestoreLatestExecutionSession}" Content="恢复最近会话" />
+                                    <Button Command="{s:Action RollbackExecution}" Content="回退会话" />
+                                </StackPanel>
+                                <Separator Margin="0,14,0,10" />
+                                <TextBlock FontWeight="SemiBold" Text="运行时状态输入（开发接口）" />
+                                <TextBlock Margin="0,7,0,0" Text="{Binding RuntimeStateStatus}" TextWrapping="Wrap" />
+                                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action CreateRuntimeStateExample}" Content="创建/打开状态模板" />
+                                    <Button Command="{s:Action RefreshRuntimeStateStatus}" Content="重新读取状态" />
+                                </StackPanel>
+                                <TextBlock Margin="0,8,0,0" Opacity="0.72" Text="支持 cost、kills、battle_started、battle_ended、skill_ready:干员、deployed:干员，以及自定义数值信号。当前由 JSON 输入；未来视觉模块实现同一接口即可替换。" TextWrapping="Wrap" />
+                                <Separator Margin="0,14,0,10" />
+                                <TextBlock FontWeight="SemiBold" Text="视觉/OCR标准化入口" />
+                                <TextBlock Margin="0,7,0,0" Text="{Binding VisionStatus}" TextWrapping="Wrap" />
+                                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action CreateVisionSnapshotExample}" Content="创建视觉结果模板" />
+                                    <Button Command="{s:Action ImportVisionSnapshot}" Content="标准化并送入执行器" />
+                                </StackPanel>
+                                <TextBlock Margin="0,8,0,0" Opacity="0.72" Text="OCR或视觉模型只需输出统一JSON。低置信度字段会被拒绝，避免把不可靠识别结果交给执行器。" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,14,0,0" Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock FontSize="18" FontWeight="SemiBold" Text="账号画像" />
+                                <TextBlock Margin="0,8,0,0" Text="{Binding DoctorProfileStatus}" TextWrapping="Wrap" />
+                                <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action CreateDoctorProfileExample}" Content="创建/打开画像模板" />
+                                    <Button Command="{s:Action ReloadDoctorProfile}" Content="重新载入画像" />
+                                </StackPanel>
+                                <TextBlock Margin="0,10,0,0" Opacity="0.72" Text="当前通过本地 JSON 导入。自动读取账号干员仍需后续接入 OCR/游戏数据采集。" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="学习与维护">
+                <ScrollViewer Margin="12" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock FontSize="18" FontWeight="SemiBold" Text="肉鸽自主学习" />
+                                <TextBlock Margin="0,8,0,0" Text="记录开局、招募、藏品、路线、楼层、结局与失败原因，并按回报保留高价值经验。" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,10,0,0" Text="{Binding RoguelikeStatus}" TextWrapping="Wrap" />
+                                <Button Margin="0,12,0,0" HorizontalAlignment="Left" Command="{s:Action RecordRoguelikeExample}" Content="写入一条测试经验" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,14,0,0" Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock FontSize="18" FontWeight="SemiBold" Text="生息演算学习" />
+                                <TextBlock Margin="0,8,0,0" Text="记录地图、天数、资源变化、基地损伤、决策和结果；奖励函数会保留高价值经验并淘汰低价值旧记录。" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,10,0,0" Text="{Binding ReclamationStatus}" TextWrapping="Wrap" />
+                                <Button Margin="0,12,0,0" HorizontalAlignment="Left" Command="{s:Action RecordReclamationExample}" Content="写入一条测试经验" />
+                                <Separator Margin="0,14,0,10" />
+                                <TextBlock FontWeight="SemiBold" Text="经验策略评估" />
+                                <TextBlock Margin="0,7,0,0" Text="{Binding PolicyStatus}" TextWrapping="Wrap" />
+                                <Button Margin="0,10,0,0" HorizontalAlignment="Left" Command="{s:Action EvaluateModePolicies}" Content="根据历史经验生成建议" />
+                                <Separator Margin="0,14,0,10" />
+                                <TextBlock FontWeight="SemiBold" Text="回放学习导入" />
+                                <TextBlock Margin="0,7,0,0" Text="{Binding ReplayStatus}" TextWrapping="Wrap" />
+                                <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action CreateReplayExample}" Content="创建回放事件模板" />
+                                    <Button Command="{s:Action ImportReplayLearning}" Content="导入回放经验" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Margin="0,14,0,0" Padding="16" Background="{DynamicResource RegionBrushOpacity25}" CornerRadius="8">
+                            <StackPanel>
+                                <TextBlock FontSize="18" FontWeight="SemiBold" Text="AI 缓存管理" />
+                                <CheckBox Margin="0,10,0,0" Content="启动时自动清理 AI 缓存" IsChecked="{Binding AutoCleanCache}" />
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="24" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="140" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Margin="0,5,8,0" Text="缓存保留天数" />
+                                    <TextBox Grid.Column="1" Text="{Binding CacheRetentionDays, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Grid.Column="3" Margin="0,5,8,0" Text="缓存上限（MB）" />
+                                    <TextBox Grid.Column="4" Text="{Binding CacheMaximumMegabytes, UpdateSourceTrigger=PropertyChanged}" />
+                                </Grid>
+                                <TextBlock Margin="0,10,0,0" Text="{Binding CacheStatus}" TextWrapping="Wrap" />
+                                <StackPanel Margin="0,12,0,0" Orientation="Horizontal">
+                                    <Button Margin="0,0,8,0" Command="{s:Action CleanCache}" Content="立即安全清理" />
+                                    <Button Margin="0,0,8,0" Command="{s:Action RefreshMaintenanceStatus}" Content="刷新占用" />
+                                    <Button Command="{s:Action SaveSettings}" Content="保存维护设置" />
+                                </StackPanel>
+                                <TextBlock Margin="0,12,0,0" Opacity="0.72" Text="只清理 cache\ai 下的临时视频帧、图片和 OCR 缓存；不会删除配置、B站攻略索引、生息演算经验库或原版 MAA 数据。" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
